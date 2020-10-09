@@ -48,11 +48,11 @@ print("Datasets loaded!")
 #NOTE: CURRENTLY, THIS MODEL IS POOP. JUST FOR MAKING SURE TRAIN SCRIPT WORKS
 model = tf.keras.Sequential([
     layers.experimental.preprocessing.Rescaling(1./255, input_shape = (IMG_HEIGHT,IMG_WIDTH,3)), #rescale image from 3 layer RGB, to 1 layer grayscale
-    layers.Conv2D(64,3, padding='same',activation='relu'),
+    layers.Conv2D(16,3, padding='same',activation='relu'),
     layers.MaxPooling2D(),
-    layers.Conv2D(64,3, padding='same',activation='relu'),
+    layers.Conv2D(16,3, padding='same',activation='relu'),
     layers.Flatten(),
-    layers.Dense(128,activation='relu'),
+    layers.Dense(16,activation='relu'),
     layers.Dense(NUM_CLASSES)
 ])
 
@@ -69,7 +69,7 @@ model.summary()
 check = input("\nReady to train? Press Y or y when ready\n")
 
 #train the dude!
-model.fit(
+fitter = model.fit(
     train_dataset,
     validation_data= validate_dataset,
     epochs = EPOCHS
@@ -79,4 +79,25 @@ print("\nSaving model...\n")
 model.save('maskface.model')
 print("Model saved!")
 
+#Get data about training success
+acc = fitter.history['accuracy']
+val_acc = fitter.history['val_accuracy']
 
+loss=fitter.history['loss']
+val_loss=fitter.history['val_loss']
+
+epochs_range = range(EPOCHS)
+
+plt.figure(figsize=(8, 8))
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.savefig('loss_accuracy.png')
