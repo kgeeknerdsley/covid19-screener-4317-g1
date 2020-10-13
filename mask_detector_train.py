@@ -128,7 +128,7 @@ model = tf.keras.Sequential([
 model.compile(
     optimizer = tf.keras.optimizers.Adam(lr = LEARNING_RATE),
     loss = tf.keras.losses.binary_crossentropy,
-    metrics = ['val_accuracy']
+    metrics = ['accuracy']
 )
 
 #check out its structure
