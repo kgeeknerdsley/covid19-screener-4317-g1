@@ -5,14 +5,14 @@ import imutils
 import numpy
 import matplotlib.pyplot as plt
 
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 IMG_HEIGHT = 150
 IMG_WIDTH = 150
 NUM_CLASSES = 2 #number of classifications, just mask / no mask
 dataDirectory = "/home/kevin/Desktop/AI Project/covidAI/prajna_dataset"
 
-EPOCHS = 10
-LEARNING_RATE = 0.001
+EPOCHS = 100
+LEARNING_RATE = 1e-6
 
 print("Loading Dataset")
 
@@ -22,6 +22,7 @@ train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
     validation_split=0.2,
     subset="training",
     seed=123,
+    shuffle=True,
     image_size=(IMG_HEIGHT,IMG_WIDTH),
     batch_size = BATCH_SIZE
 )
@@ -32,6 +33,7 @@ validate_dataset = tf.keras.preprocessing.image_dataset_from_directory(
   validation_split=0.2,
   subset="validation",
   seed=123,
+  shuffle=True,
   image_size=(IMG_HEIGHT, IMG_WIDTH),
   batch_size=BATCH_SIZE)
 
@@ -61,30 +63,44 @@ model = tf.keras.Sequential([
     data_augment_layer,
     layers.experimental.preprocessing.Rescaling(1./255, input_shape = (IMG_HEIGHT,IMG_WIDTH,3)), #rescale image from 3 layer RGB, to 1 layer grayscale
 
-    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.Conv2D(64, (3,3), input_shape = (IMG_HEIGHT,IMG_WIDTH,3), padding='same',activation='relu'),
     layers.BatchNormalization(),
     layers.Conv2D(64, (3,3), padding='same',activation='relu'),
     layers.BatchNormalization(),
     layers.MaxPooling2D(pool_size=(2,2)),
     layers.Dropout(0.2),
 
-    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
-    layers.BatchNormalization(),
-    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
-    layers.BatchNormalization(),
-    layers.MaxPooling2D(pool_size=(2,2)),
-    layers.Dropout(0.2),
+    # layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    # layers.BatchNormalization(),
+    # layers.Conv2D(64, (3,3), padding='same',activation='linear'),
+    # layers.BatchNormalization(),
+    # layers.MaxPooling2D(pool_size=(2,2)),
+    # layers.Dropout(0.2),
+
+    # layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    # layers.BatchNormalization(),
+    # layers.Conv2D(64, (3,3), padding='same',activation='linear'),
+    # layers.BatchNormalization(),
+    # layers.MaxPooling2D(pool_size=(2,2)),
+    # layers.Dropout(0.2),
+
+    # layers.Conv2D(16, (3,3), padding='same',activation='relu'),
+    # layers.BatchNormalization(),
+    # layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    # layers.BatchNormalization(),
+    # layers.MaxPooling2D(pool_size=(2,2)),
+    # layers.Dropout(0.2),
+
+    # layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    # layers.BatchNormalization(),
+    # layers.Conv2D(64, (3,3), padding='same',activation='linear'),
+    # layers.BatchNormalization(),
+    # layers.MaxPooling2D(pool_size=(2,2)),
+    # layers.Dropout(0.2),
 
     layers.Conv2D(64, (3,3), padding='same',activation='relu'),
     layers.BatchNormalization(),
-    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
-    layers.BatchNormalization(),
-    layers.MaxPooling2D(pool_size=(2,2)),
-    layers.Dropout(0.2),
-
-    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
-    layers.BatchNormalization(),
-    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.Conv2D(64, (3,3), padding='same',activation='linear'),
     layers.BatchNormalization(),
     layers.MaxPooling2D(pool_size=(2,2)),
     layers.Dropout(0.2),
@@ -97,22 +113,22 @@ model = tf.keras.Sequential([
     layers.Dropout(0.2),
     
     layers.Flatten(),
-    layers.Dense(2048,activation='relu'),
-    layers.Dense(1024,activation='relu'),
-    layers.Dense(512,activation='relu'),
+    layers.Dense(4096,activation='relu'),
+    layers.Dense(4096,activation='relu'),
+    layers.Dense(512,activation='linear'),
     layers.Dense(128,activation='relu'),
     layers.Dense(64,activation='relu'),
     layers.Dense(32,activation='relu'),
-    layers.Dense(16,activation='relu'),
+    layers.Dense(16,activation='linear'),
     layers.Dense(4,activation='relu'),
-    layers.Dense(NUM_CLASSES,activation='softmax')
+    layers.Dense(1,activation='sigmoid')
 ])
 
 #compile the model
 model.compile(
     optimizer = tf.keras.optimizers.Adam(lr = LEARNING_RATE),
     loss = tf.keras.losses.binary_crossentropy,
-    metrics = ['accuracy']
+    metrics = ['val_accuracy']
 )
 
 #check out its structure
