@@ -56,6 +56,7 @@ model = tf.keras.Sequential([
     layers.Dense(NUM_CLASSES)
 ])
 
+
 #compile the model
 model.compile(
     optimizer = 'adam',
