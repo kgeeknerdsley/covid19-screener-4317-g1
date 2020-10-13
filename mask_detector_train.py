@@ -44,22 +44,73 @@ validate_dataset = validate_dataset.cache().prefetch(buffer_size = AUTOTUNE)
 
 print("Datasets loaded!")
 
+#data augmentation layer
+#randomly flip images, rotate a bit, and zoom a bit
+data_augment_layer = tf.keras.Sequential(
+    [
+        layers.experimental.preprocessing.RandomFlip('horizontal',
+        input_shape=(IMG_HEIGHT,IMG_WIDTH,3)),
+        layers.experimental.preprocessing.RandomRotation(0.1),
+        layers.experimental.preprocessing.RandomZoom(0.1)
+    ]
+)
+
 #build the model!
 #NOTE: CURRENTLY, THIS MODEL IS POOP. JUST FOR MAKING SURE TRAIN SCRIPT WORKS
 model = tf.keras.Sequential([
+    data_augment_layer,
     layers.experimental.preprocessing.Rescaling(1./255, input_shape = (IMG_HEIGHT,IMG_WIDTH,3)), #rescale image from 3 layer RGB, to 1 layer grayscale
-    layers.Conv2D(16,3, padding='same',activation='relu'),
-    layers.MaxPooling2D(),
-    layers.Conv2D(16,3, padding='same',activation='relu'),
-    layers.Flatten(),
-    layers.Dense(16,activation='relu'),
-    layers.Dense(NUM_CLASSES)
-])
 
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(pool_size=(2,2)),
+    layers.Dropout(0.2),
+
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(pool_size=(2,2)),
+    layers.Dropout(0.2),
+
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(pool_size=(2,2)),
+    layers.Dropout(0.2),
+
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(pool_size=(2,2)),
+    layers.Dropout(0.2),
+
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.Conv2D(64, (3,3), padding='same',activation='relu'),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(pool_size=(2,2)),
+    layers.Dropout(0.2),
+    
+    layers.Flatten(),
+    layers.Dense(2048,activation='relu'),
+    layers.Dense(1024,activation='relu'),
+    layers.Dense(512,activation='relu'),
+    layers.Dense(128,activation='relu'),
+    layers.Dense(64,activation='relu'),
+    layers.Dense(32,activation='relu'),
+    layers.Dense(16,activation='relu'),
+    layers.Dense(4,activation='relu'),
+    layers.Dense(NUM_CLASSES,activation='softmax')
+])
 
 #compile the model
 model.compile(
-    optimizer = 'adam',
+    optimizer = tf.keras.optimizers.Adam(lr = LEARNING_RATE),
     loss = tf.keras.losses.binary_crossentropy,
     metrics = ['accuracy']
 )
@@ -67,13 +118,19 @@ model.compile(
 #check out its structure
 model.summary()
 
+lr_reducer = tf.keras.callbacks.ReduceLROnPlateau(monitor='loss',factor=0.9,patience=3)
+#stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_accuracy',min_delta=0, patience=5,mode='auto')
+checkpoint = tf.keras.callbacks.ModelCheckpoint('/home/kevin/Desktop/AI Project/covidAI/checkpoint.hd5', monitor='val_accuracy', verbose=1, save_best_only=True)
+
 check = input("\nReady to train? Press Y or y when ready\n")
 
 #train the dude!
 fitter = model.fit(
     train_dataset,
     validation_data= validate_dataset,
-    epochs = EPOCHS
+    epochs = EPOCHS,
+    shuffle=True,
+    callbacks=[lr_reducer,checkpoint]
 )
 
 print("\nSaving model...\n")
