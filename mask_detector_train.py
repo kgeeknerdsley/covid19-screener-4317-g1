@@ -11,7 +11,7 @@ IMG_WIDTH = 150
 NUM_CLASSES = 2 #number of classifications, just mask / no mask
 dataDirectory = "/home/kevin/Desktop/AI Project/covidAI/prajna_dataset"
 
-EPOCHS = 100
+EPOCHS = 55
 LEARNING_RATE = 1e-6
 
 print("Loading Dataset")
@@ -61,9 +61,9 @@ data_augment_layer = tf.keras.Sequential(
 #NOTE: CURRENTLY, THIS MODEL IS POOP. JUST FOR MAKING SURE TRAIN SCRIPT WORKS
 model = tf.keras.Sequential([
     data_augment_layer,
-    layers.experimental.preprocessing.Rescaling(1./255, input_shape = (IMG_HEIGHT,IMG_WIDTH,3)), #rescale image from 3 layer RGB, to 1 layer grayscale
+    layers.experimental.preprocessing.Rescaling(1./255, input_shape = (IMG_HEIGHT,IMG_WIDTH,1)), #rescale image from 3 layer RGB, to 1 layer grayscale
 
-    layers.Conv2D(64, (3,3), input_shape = (IMG_HEIGHT,IMG_WIDTH,3), padding='same',activation='relu'),
+    layers.Conv2D(64, (3,3), input_shape = (IMG_HEIGHT,IMG_WIDTH,1), padding='same',activation='relu'),
     layers.BatchNormalization(),
     layers.Conv2D(64, (3,3), padding='same',activation='relu'),
     layers.BatchNormalization(),
