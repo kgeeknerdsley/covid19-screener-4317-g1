@@ -7,7 +7,7 @@ import copy
 secBetween = 3
 startingPoint = 100
 
-model_loaded = tf.keras.models.load_model('maskface.model')
+model_loaded = tf.keras.models.load_model('/home/kevin/Desktop/AI Project/maskface.model')
 
 webcam = cv2.VideoCapture(0)
 
@@ -25,14 +25,22 @@ while(True):
     if(success):
         if(cv2.waitKey(1) == 32):
             imageModified = cv2.cvtColor(imageModified, cv2.COLOR_BGR2GRAY)
+            imageModified = imageModified[100:350, 100:350]
             imageModified = cv2.resize(imageModified,(150,150))
+            cv2.imshow("Image to model", imageModified)
             imageModified = np.reshape(imageModified,(1,150,150,1))
 
-            #cv2.imshow("Image to model", imageModified)
-            print(np.shape(imageModified))
+            #print(np.shape(imageModified))
 
             predictions = model_loaded.predict(imageModified) #include file to check out
-            result = np.argmax(predictions)
+            result = predictions[0]
+
+            #Positive mask ID skews to 0
+            # Negative on mask skews to 1
+            if(result <= 0.5):
+                print("Mask\n")
+            else:
+                print("No mask\n")
 
             print("Result: " , str(result))
         elif(cv2.waitKey(1) == 27):

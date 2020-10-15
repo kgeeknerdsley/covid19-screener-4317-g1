@@ -23,6 +23,8 @@ train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
     subset="training",
     seed=123,
     shuffle=True,
+    color_mode='grayscale',
+    label_mode='binary',
     image_size=(IMG_HEIGHT,IMG_WIDTH),
     batch_size = BATCH_SIZE
 )
@@ -34,6 +36,8 @@ validate_dataset = tf.keras.preprocessing.image_dataset_from_directory(
   subset="validation",
   seed=123,
   shuffle=True,
+  color_mode='grayscale',
+  label_mode = 'binary',
   image_size=(IMG_HEIGHT, IMG_WIDTH),
   batch_size=BATCH_SIZE)
 
@@ -51,7 +55,7 @@ print("Datasets loaded!")
 data_augment_layer = tf.keras.Sequential(
     [
         layers.experimental.preprocessing.RandomFlip('horizontal',
-        input_shape=(IMG_HEIGHT,IMG_WIDTH,3)),
+        input_shape=(IMG_HEIGHT,IMG_WIDTH,1)),
         layers.experimental.preprocessing.RandomRotation(0.1),
         layers.experimental.preprocessing.RandomZoom(0.1)
     ]
