@@ -18,14 +18,14 @@ while(True):
 
     imageWithGuide = image
     imageModified = copy.deepcopy(image)
-    cv2.rectangle(imageWithGuide,(startingPoint, startingPoint),(startingPoint+250, startingPoint+250), (0,255,0),thickness=2)
+    cv2.rectangle(imageWithGuide,(210, 120),(430, 360), (0,255,0),thickness=2)
 
     cv2.imshow("Live Feed", imageWithGuide)
 
     if(success):
         if(cv2.waitKey(1) == 32):
             imageModified = cv2.cvtColor(imageModified, cv2.COLOR_BGR2GRAY)
-            imageModified = imageModified[100:350, 100:350]
+            imageModified = imageModified[120:360, 210:430]
             imageModified = cv2.resize(imageModified,(150,150))
             cv2.imshow("Image to model", imageModified)
             imageModified = np.reshape(imageModified,(1,150,150,1))
