@@ -52,7 +52,9 @@ while(True):
     cv2.rectangle(imageWithGuide,(210, 120),(430, 360), (0,255,0),thickness=2)
 
     if(validResult):
-        cv2.putText(imageWithGuide,str(hasMask),(50,500),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+        cv2.putText(imageWithGuide,str(hasMask),(50,100),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),thickness=2)
+    else:
+        cv2.putText(imageWithGuide,"No subject",(50,100),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),thickness=2)
 
     cv2.imshow("Live Feed", imageWithGuide)
     cv2.imshow("Calibrated image", calibImage)
@@ -60,6 +62,7 @@ while(True):
     if(success):
         if(isNewSubject(imageBox,calibImage)):
             validResult = True
+
             #perform image preprocessing
             imageModified = cv2.cvtColor(imageModified, cv2.COLOR_BGR2GRAY)
             imageModified = imageModified[120:360, 210:430]
@@ -86,6 +89,7 @@ while(True):
                     hasMask = True
                 else:
                     print("No mask")
+                    hasMask = False
             else:
                 maskChecks = maskChecks + 1
         else:
