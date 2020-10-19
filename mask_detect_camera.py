@@ -6,21 +6,26 @@ import copy
 
 secBetween = 3
 startingPoint = 100
+calibComplete = False
 
 model_loaded = tf.keras.models.load_model('/home/kevin/Desktop/AI Project/maskface.model')
 
 webcam = cv2.VideoCapture(0)
 
-#print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-
 while(True):
     success, image = webcam.read()
+
+    if(calibComplete == False):
+        calibImage = copy.deepcopy(image)
+        calibImage = calibImage[120:360, 210:430]
+        calibComplete = True
 
     imageWithGuide = image
     imageModified = copy.deepcopy(image)
     cv2.rectangle(imageWithGuide,(210, 120),(430, 360), (0,255,0),thickness=2)
 
     cv2.imshow("Live Feed", imageWithGuide)
+    cv2.imshow("Calibrated image", calibImage)
 
     if(success):
         if(cv2.waitKey(1) == 32):
