@@ -8,9 +8,32 @@ secBetween = 3
 startingPoint = 100
 calibComplete = False
 
+maskChecks = 0
+maskResult = 0
+checkLimit = 5
+
+hasMask = False
+validResult = False
+
 model_loaded = tf.keras.models.load_model('/home/kevin/Desktop/AI Project/maskface.model')
 
 webcam = cv2.VideoCapture(0)
+
+def isNewSubject(currentImage, calibratedImage):
+    sensitivity = 10
+    currentWeights = np.average(currentImage)
+    calibWeights = np.average(calibratedImage)
+    result = False
+
+    if(currentWeights <= calibWeights - 12 or currentWeights >= calibWeights + 12):
+        result = True
+    else:
+        result = False
+
+    print("Current average: " + str(currentWeights))
+    print("Calibration average: " + str(calibWeights) + "\n")
+
+    return result
 
 while(True):
     success, image = webcam.read()
@@ -23,39 +46,63 @@ while(True):
         calibComplete = True
 
     imageWithGuide = image
-    #imageWithGuide = cv2.cvtColor(imageWithGuide, cv2.COLOR_BGR2GRAY)
     imageModified = copy.deepcopy(image)
+    imageBox = copy.deepcopy(image)
+    imageBox = imageBox[120:360, 210:430]
     cv2.rectangle(imageWithGuide,(210, 120),(430, 360), (0,255,0),thickness=2)
+
+    if(validResult):
+        cv2.putText(imageWithGuide,str(hasMask),(50,100),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),thickness=2)
+    else:
+        cv2.putText(imageWithGuide,"No subject",(50,100),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),thickness=2)
 
     cv2.imshow("Live Feed", imageWithGuide)
     cv2.imshow("Calibrated image", calibImage)
 
     if(success):
-        imageModified = cv2.cvtColor(imageModified, cv2.COLOR_BGR2GRAY)
-        imageModified = imageModified[120:360, 210:430]
-        imageModified = cv2.resize(imageModified,(150,150))
-        #cv2.imshow("Image to model", imageModified)
-        imageModified = np.reshape(imageModified,(1,150,150,1))
+        if(isNewSubject(imageBox,calibImage)):
+            validResult = True
 
-            #print(np.shape(imageModified))
+            #perform image preprocessing
+            imageModified = cv2.cvtColor(imageModified, cv2.COLOR_BGR2GRAY)
+            imageModified = imageModified[120:360, 210:430]
+            imageModified = cv2.resize(imageModified,(150,150))
+            cv2.imshow("Image to model", imageModified)
+            imageModified = np.reshape(imageModified,(1,150,150,1))
 
-        predictions = model_loaded.predict(imageModified) #include file to check out
-        result = predictions[0]
+            #pass to model, get result
+            predictions = model_loaded.predict(imageModified) #include file to check out
+            result = predictions[0]
 
-        #Positive mask ID skews to 0
-        # Negative on mask skews to 1
-        if(result <= 0.5):
-            print("Mask\n")
+            #Positive mask ID skews to 0
+            # Negative on mask skews to 1
+            if(result <= 0.5):
+                #print("Mask\n")
+                maskResult = maskResult + 1
+
+            if(maskChecks == checkLimit):
+                maskChecks = 0
+                maskResult = (maskResult / checkLimit)
+
+                if(maskResult >= 0.6):
+                    print("Mask")
+                    hasMask = True
+                else:
+                    print("No mask")
+                    hasMask = False
+            else:
+                maskChecks = maskChecks + 1
         else:
-            print("No mask\n")
+            validResult = False
 
-        print("Result: " , str(result))
     else:
         print("Camera did not open")
         break
 
     if(cv2.waitKey(1) == 27):
         break
+
+    #time.sleep(1)
 
     
 
